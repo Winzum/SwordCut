@@ -1,5 +1,6 @@
 console.log("SwordCut activated");
 let word = "";
+let swordcuts = {};
 
 // returns the caret's position
 function getCaretPosition(element) {
@@ -27,22 +28,12 @@ function setCaretPosition(element, position) {
   }
 }
 
-// check constructed word for stored commands #add ability to add new ones #TODO make user changable
+// check constructed word for stored commands
 function checkWordForCommand(w) {
-  //console.log(w);
-  switch (w) {
-    case "/gd":
-      return "Good day, how can I help?";
-
-    case "/que":
-      return "Could you supply me with some further answers. Which users? Which contracts? What are the plate numbers?";
-
-    case "/wb":
-      return "Waiting for business.";
-
-    default:
-      return false;
-  }
+  console.log(swordcuts);
+  if (swordcuts[w]) {
+    return swordcuts[w];
+  } else return false;
 }
 
 // construct a word by checking the input events
@@ -52,7 +43,7 @@ function constructWord(e) {
       word = word.concat(e.data);
     }
   } else {
-    // only fire when entering letters from english alphabet #TODO support others
+    // only fire when entering letters from english alphabet
     if (/^[a-zA-Z]/.test(e.data)) {
       word = word.concat(e.data);
     }
@@ -60,15 +51,8 @@ function constructWord(e) {
 
   // check for command and/or return to empty word
   if (e.data === " " && word !== "") {
-    const command = checkWordForCommand(word);
+    command = checkWordForCommand(word);
     if (command) {
-      console.log("here");
-      console.log(e.target);
-      // e.target.textContent =
-      //   e.target.textContent.substring(
-      //     0,
-      //     e.target.textContent.length - (word.length + 1)
-      //   ) + command;
       const caretPosition = getCaretPosition(e.target);
       console.log(caretPosition);
       if (e.target.setSelectionRange) {
@@ -82,16 +66,14 @@ function constructWord(e) {
           command +
           e.target.textContent.substring(caretPosition);
       }
-      //setCaretPosition(e.target, caretPosition + command.length);
+      word = "";
     }
-
-    word = "";
   }
 }
 
 // add event listener to an input field
 function addInputEvent(e) {
-  console.log(e.target);
+  // console.log(e.target);
   e.target.addEventListener("input", constructWord);
 }
 
@@ -100,6 +82,30 @@ function removeInputEvent(e) {
   e.target.removeEventListener("input", constructWord);
   word = "";
 }
+
+function onError(error) {
+  console.log(`Error: ${error}`);
+}
+
+function onGot(item) {
+  return (
+    item.swordcuts || JSON.parse('{"/gd": "Good morning, how can I help you?"}')
+  );
+}
+
+function retrieveSwordcuts() {
+  console.log("retrieving swordcuts from storage");
+  let getting = browser.storage.sync.get("swordcuts");
+  return getting.then(onGot, onError);
+}
+
+retrieveSwordcuts()
+  .then((retrievedSwordcuts) => {
+    swordcuts = retrievedSwordcuts;
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  });
 
 window.addEventListener("focusin", addInputEvent);
 window.addEventListener("focusout", removeInputEvent);
