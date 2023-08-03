@@ -7,3 +7,5 @@ For example:
 "/gd" --> "Good morning, how can I help you"
 
 User will be able to add new phrases
+
+Currently only works in Mozilla Firefox
