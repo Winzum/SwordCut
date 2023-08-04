@@ -1,4 +1,4 @@
-# SwordCut 
+# SwordCut
 
 This is an extension created to save time typing repeated phrases.
 
@@ -8,4 +8,4 @@ For example:
 
 User will be able to add new phrases
 
-Currently only works in Mozilla Firefox
+Currently works in both Chrome and Firefox

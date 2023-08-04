@@ -39,17 +39,22 @@
     console.log(`Error: ${error}`);
   }
 
-  function onGot(item) {
-    return (
-      item.swordcuts ||
-      JSON.parse('{"/gd": "Good morning, how can I help you?"}')
-    );
-  }
-
-  function retrieveSwordcuts() {
+  async function retrieveSwordcuts() {
+    const storageApi = window.browser ? browser.storage : chrome.storage; // Determine the storage API namespace
     console.log("retrieving swordcuts from storage");
-    let getting = browser.storage.sync.get("swordcuts");
-    return getting.then(onGot, onError);
+
+    return new Promise((resolve, reject) => {
+      storageApi.local.get(["swordcuts"], function (result) {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(
+            result.swordcuts ||
+              JSON.parse('{"/gd": "Good morning, how can I help you?"}')
+          );
+        }
+      });
+    });
   }
 
   // check constructed word for stored commands
@@ -87,20 +92,22 @@
       try {
         const command = await checkWordForCommand(word);
         if (command) {
+          let newText;
           let caretPosition = getCaretPosition(e.target);
           console.log(caretPosition);
           if (e.target.setSelectionRange) {
-            e.target.value =
+            newText =
               e.target.value.substring(0, caretPosition - (word.length + 1)) +
               command +
               e.target.value.substring(caretPosition);
+            e.target.value = newText;
             caretPosition = caretPosition - (word.length + 1) + command.length;
           } else if (e.target.isContentEditable) {
             console.log(e.target.textContent);
 
             const startOffset = caretPosition - (word.length + 1);
             const endOffset = caretPosition;
-            const newText =
+            newText =
               e.target.firstChild.textContent.substring(0, startOffset) +
               command +
               e.target.firstChild.textContent.substring(endOffset);

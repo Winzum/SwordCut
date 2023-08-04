@@ -1,11 +1,11 @@
 function saveOptions(e) {
   e.preventDefault();
-
   const text = document.querySelector("#swordcuts").value;
   try {
     const jsonObject = JSON.parse(text);
     console.log("Parsed JSON object:", jsonObject);
-    browser.storage.sync.set({
+    const storageApi = window.browser ? browser.storage : chrome.storage; // Determine the storage API namespace
+    storageApi.local.set({
       swordcuts: jsonObject,
     });
   } catch (error) {
@@ -23,9 +23,15 @@ function restoreOptions() {
   function onError(error) {
     console.log(`Error: ${error}`);
   }
+  const storageApi = window.browser ? browser.storage : chrome.storage; // Determine the storage API namespace
 
-  let getting = browser.storage.sync.get("swordcuts");
-  getting.then(setCurrentChoice, onError);
+  storageApi.local.get(["swordcuts"], function (result) {
+    if (chrome.runtime.lastError) {
+      onError(chrome.runtime.lastError);
+    } else {
+      setCurrentChoice(result);
+    }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", restoreOptions);
