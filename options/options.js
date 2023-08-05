@@ -1,3 +1,4 @@
+// Function to save options
 function saveOptions(e) {
   e.preventDefault();
   const text = document.querySelector("#swordcuts").value;
@@ -13,6 +14,7 @@ function saveOptions(e) {
   }
 }
 
+// Function to restore options
 function restoreOptions() {
   function setCurrentChoice(result) {
     document.querySelector("#swordcuts").value =
@@ -20,19 +22,16 @@ function restoreOptions() {
       '{"/gd": "Good morning, how can I help you?"}';
   }
 
-  function onError(error) {
-    console.log(`Error: ${error}`);
-  }
   const storageApi = window.browser ? browser.storage : chrome.storage; // Determine the storage API namespace
-
-  storageApi.local.get(["swordcuts"], function (result) {
+  storageApi.local.get(["swordcuts"], (result) => {
     if (chrome.runtime.lastError) {
-      onError(chrome.runtime.lastError);
+      console.error("Error retrieving swordcuts:", chrome.runtime.lastError);
     } else {
       setCurrentChoice(result);
     }
   });
 }
 
+// Add event listeners
 document.addEventListener("DOMContentLoaded", restoreOptions);
 document.querySelector("form").addEventListener("submit", saveOptions);

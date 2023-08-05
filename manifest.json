@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "SwordCut",
-  "version": "0.2",
-  "description": "Word Shortcuts for free",
+  "version": "0.3.0",
+  "description": "/ws --> Word Shortcuts to save time typing.",
   "icons": {
     "128": "images/sword128.png",
     "48": "images/sword48.png",
@@ -23,7 +23,6 @@
 
   "options_ui": {
     "page": "options/options.html",
-    "browser_style": true,
     "open_in_tab": true
   },
 
@@ -31,7 +30,7 @@
 
   "browser_specific_settings": {
     "gecko": {
-      "id": "swordcut@sword.cut"
+      "id": "2103F315-ECF9-4028-9C86-F16EB8C16661"
     }
   }
 }
