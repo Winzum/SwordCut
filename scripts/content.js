@@ -1,7 +1,8 @@
 // immediately invoked function expression
 (function () {
   console.log("SwordCut activated");
-  let word = "";
+
+  let constructedWord = "";
   let swordcuts = {};
 
   // returns the caret's position
@@ -36,7 +37,7 @@
   }
 
   function onError(error) {
-    console.log(`Error: ${error}`);
+    console.error("Error:", error);
   }
 
   async function retrieveSwordcuts() {
@@ -58,7 +59,7 @@
   }
 
   // check constructed word for stored commands
-  async function checkWordForCommand(w) {
+  async function checkWordForCommand(word) {
     //retrieve from storage if swordcuts has not yet been retrieved
     if (Object.keys(swordcuts).length === 0) {
       try {
@@ -69,73 +70,76 @@
       }
     }
 
-    if (swordcuts[w]) {
-      return swordcuts[w];
+    if (swordcuts[word]) {
+      return swordcuts[word];
     } else return false;
   }
 
   // construct a word by checking the input events
-  async function constructWord(e) {
-    if (word === "") {
-      if (e.data === "/") {
-        word = word.concat(e.data);
+  async function constructWord(element) {
+    if (constructWord === "") {
+      if (element.data === "/") {
+        constructedWord = constructedWord.concat(element.data);
       }
-    } else if (word[0] === "/") {
+    } else if (constructedWord[0] === "/") {
       // only fire when entering letters from english alphabet
-      if (/^[a-zA-Z]/.test(e.data)) {
-        word = word.concat(e.data);
+      if (/^[a-zA-Z]/.test(element.data)) {
+        constructedWord = constructedWord.concat(element.data);
       }
     }
 
     // check for command and/or return to empty word
-    if (e.data === " " && word !== "") {
+    if (element.data === " " && constructedWord !== "") {
       try {
-        const command = await checkWordForCommand(word);
+        const command = await checkWordForCommand(constructedWord);
         if (command) {
           let newText;
-          let caretPosition = getCaretPosition(e.target);
+          let caretPosition = getCaretPosition(element.target);
           console.log(caretPosition);
-          if (e.target.setSelectionRange) {
+          if (element.target.setSelectionRange) {
             newText =
-              e.target.value.substring(0, caretPosition - (word.length + 1)) +
+              element.target.textContent.substring(
+                0,
+                caretPosition - (constructedWord.length + 1)
+              ) +
               command +
-              e.target.value.substring(caretPosition);
-            e.target.value = newText;
-            caretPosition = caretPosition - (word.length + 1) + command.length;
-          } else if (e.target.isContentEditable) {
-            console.log(e.target.textContent);
+              element.target.textContent.substring(caretPosition);
+            element.target.textContent = newText;
+            caretPosition =
+              caretPosition - (constructedWord.length + 1) + command.length;
+          } else if (element.target.isContentEditable) {
+            console.log(element.target.textContent);
 
-            const startOffset = caretPosition - (word.length + 1);
+            const startOffset = caretPosition - (constructedWord.length + 1);
             const endOffset = caretPosition;
             newText =
-              e.target.firstChild.textContent.substring(0, startOffset) +
+              element.target.firstChild.textContent.substring(0, startOffset) +
               command +
-              e.target.firstChild.textContent.substring(endOffset);
+              element.target.firstChild.textContent.substring(endOffset);
             console.log(newText);
-            console.log(e.target);
-            e.target.firstChild.textContent = newText;
+            console.log(element.target);
+            element.target.firstChild.textContent = newText;
             caretPosition = startOffset + command.length;
           }
           // Update caret position
-          setCaretPosition(e.target, caretPosition);
+          setCaretPosition(element.target, caretPosition);
         }
       } catch (error) {
         onError(error);
       }
-      word = "";
+      constructedWord = "";
     }
   }
 
   // add event listener to an input field
-  function addInputEvent(e) {
-    // console.log(e.target);
-    e.target.addEventListener("input", constructWord);
+  function addInputEvent(element) {
+    element.target.addEventListener("input", constructWord);
   }
 
   // remove event listener from an input field
-  function removeInputEvent(e) {
-    e.target.removeEventListener("input", constructWord);
-    word = "";
+  function removeInputEvent(element) {
+    element.target.removeEventListener("input", constructWord);
+    constructedWord = "";
   }
 
   function initialize() {

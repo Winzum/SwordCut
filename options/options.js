@@ -1,6 +1,6 @@
 // Function to save options
-function saveOptions(e) {
-  e.preventDefault();
+function saveOptions(element) {
+  element.preventDefault();
   const text = document.querySelector("#swordcuts").value;
   try {
     const jsonObject = JSON.parse(text);
