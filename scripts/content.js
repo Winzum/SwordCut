@@ -29,7 +29,7 @@
       const selection = window.getSelection();
       const range = document.createRange();
       //assuming simple childnodes
-      range.setStart(element.firstChild, position);
+      range.setStart(element.childNodes[0], position);
       range.collapse(true);
       selection.removeAllRanges();
       selection.addRange(range);
@@ -126,12 +126,12 @@
       const startOffset = caretPosition - (command.length + 1);
       const endOffset = caretPosition;
       newText =
-        element.target.firstChild.textContent.substring(0, startOffset) +
+        element.target.childNodes[0].textContent.substring(0, startOffset) +
         sentence +
-        element.target.firstChild.textContent.substring(endOffset);
+        element.target.childNodes[0].textContent.substring(endOffset);
       //console.log(newText);
       //console.log(element.target);
-      element.target.firstChild.textContent = newText;
+      element.target.childNodes[0].textContent = newText;
       caretPosition = startOffset + sentence.length;
     }
     // Update caret position
