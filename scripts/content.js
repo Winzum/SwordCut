@@ -2,7 +2,7 @@
 (function () {
   console.log("SwordCut activated");
 
-  let constructedWord = "";
+  let command = "";
   let swordcuts = {};
 
   // returns the caret's position
@@ -40,6 +40,7 @@
     console.error("Error:", error);
   }
 
+  // retrieve swordcuts from local storage
   async function retrieveSwordcuts() {
     const storageApi = window.browser ? browser.storage : chrome.storage; // Determine the storage API namespace
     console.log("retrieving swordcuts from storage");
@@ -58,88 +59,94 @@
     });
   }
 
-  // check constructed word for stored commands
-  async function checkWordForCommand(word) {
+  // check constructed command for stored sentences
+  async function checkCommand(command) {
     //retrieve from storage if swordcuts has not yet been retrieved
     if (Object.keys(swordcuts).length === 0) {
       try {
         swordcuts = await retrieveSwordcuts();
-        console.log(swordcuts);
+        //console.log(swordcuts);
       } catch (error) {
         onError(error);
       }
     }
 
-    if (swordcuts[word]) {
-      return swordcuts[word];
+    if (swordcuts[command]) {
+      return swordcuts[command];
     } else return false;
   }
 
-  // construct a word by checking the input events
-  async function constructWord(element) {
-    if (constructWord === "") {
+  // construct a command by checking the input events
+  async function constructCommand(element) {
+    if (command === "") {
       if (element.data === "/") {
-        constructedWord = constructedWord.concat(element.data);
+        command = command.concat(element.data);
       }
-    } else if (constructedWord[0] === "/") {
+    } else if (command[0] === "/") {
       // only fire when entering letters from english alphabet
       if (/^[a-zA-Z]/.test(element.data)) {
-        constructedWord = constructedWord.concat(element.data);
+        command = command.concat(element.data);
       }
     }
 
-    // check for command and/or return to empty word
-    if (element.data === " " && constructedWord !== "") {
+    // check command and/or return to empty
+    if (element.data === " " && command !== "") {
       try {
-        const command = await checkWordForCommand(constructedWord);
-        if (command) {
-          let newText;
-          let caretPosition = getCaretPosition(element.target);
-          console.log(caretPosition);
-          if (element.target.setSelectionRange) {
-            newText =
-              element.target.textContent.substring(
-                0,
-                caretPosition - (constructedWord.length + 1)
-              ) +
-              command +
-              element.target.textContent.substring(caretPosition);
-            element.target.textContent = newText;
-            caretPosition =
-              caretPosition - (constructedWord.length + 1) + command.length;
-          } else if (element.target.isContentEditable) {
-            console.log(element.target.textContent);
-
-            const startOffset = caretPosition - (constructedWord.length + 1);
-            const endOffset = caretPosition;
-            newText =
-              element.target.firstChild.textContent.substring(0, startOffset) +
-              command +
-              element.target.firstChild.textContent.substring(endOffset);
-            console.log(newText);
-            console.log(element.target);
-            element.target.firstChild.textContent = newText;
-            caretPosition = startOffset + command.length;
-          }
-          // Update caret position
-          setCaretPosition(element.target, caretPosition);
+        const sentence = await checkCommand(command);
+        if (sentence) {
+          replaceElementText(element, command, sentence);
         }
       } catch (error) {
         onError(error);
       }
-      constructedWord = "";
+      command = "";
     }
+  }
+
+  // replace element content with new text
+  function replaceElementText(element, command, sentence) {
+    let newText;
+    let caretPosition = getCaretPosition(element.target);
+    //console.log(caretPosition);
+    if (element.target.setSelectionRange) {
+      // input and textarea
+      newText =
+        element.target.value.substring(
+          0,
+          caretPosition - (command.length + 1)
+        ) +
+        sentence +
+        element.target.value.substring(caretPosition);
+      element.target.value = newText;
+      caretPosition = caretPosition - (command.length + 1) + sentence.length;
+    } else if (element.target.isContentEditable) {
+      // contenteditable
+      //console.log(element.target.textContent);
+
+      const startOffset = caretPosition - (command.length + 1);
+      const endOffset = caretPosition;
+      newText =
+        element.target.firstChild.textContent.substring(0, startOffset) +
+        sentence +
+        element.target.firstChild.textContent.substring(endOffset);
+      //console.log(newText);
+      //console.log(element.target);
+      element.target.firstChild.textContent = newText;
+      caretPosition = startOffset + sentence.length;
+    }
+    // Update caret position
+    setCaretPosition(element.target, caretPosition);
   }
 
   // add event listener to an input field
   function addInputEvent(element) {
-    element.target.addEventListener("input", constructWord);
+    element.target.addEventListener("input", constructCommand);
   }
 
   // remove event listener from an input field
   function removeInputEvent(element) {
-    element.target.removeEventListener("input", constructWord);
-    constructedWord = "";
+    element.target.removeEventListener("input", constructCommand);
+    command = "";
   }
 
   function initialize() {
