@@ -9,3 +9,5 @@ For example:
 User will be able to add new phrases
 
 Currently works in both Chrome and Firefox
+
+[Sword icons created by Freepik - Flaticon](https://www.flaticon.com/free-icons/sword)
