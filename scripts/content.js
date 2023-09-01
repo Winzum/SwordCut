@@ -150,8 +150,20 @@
   }
 
   function initialize() {
+    //add listeners to current window
     window.addEventListener("focusin", addInputEvent);
     window.addEventListener("focusout", removeInputEvent);
+
+    // check for iframes
+    const iframes = document.querySelectorAll("iframe");
+
+    // Check if there are iframes on the page and add events
+    if (iframes.length > 0) {
+      for (let i = 0; i < iframes.length; i++) {
+        iframes[i].contentWindow.addEventListener("focusin", addInputEvent);
+        iframes[i].contentWindow.addEventListener("focusout", removeInputEvent);
+      }
+    }
   }
 
   initialize();
